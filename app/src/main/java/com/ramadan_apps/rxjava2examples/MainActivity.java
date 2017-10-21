@@ -1,21 +1,31 @@
 package com.ramadan_apps.rxjava2examples;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
+
+import static android.R.attr.value;
 
 public class MainActivity extends AppCompatActivity {
+
+    private String TAG=MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
 
     }
@@ -94,4 +104,59 @@ public class MainActivity extends AppCompatActivity {
                          });
 
     }
+
+    private void showFunctionOfSubscribeOn(){
+        Observable.just(100, 200, 300)
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(getObserver());
+    }
+
+
+    private void showFunctionOfObserverOn(){
+        Observable.just(100, 200, 300)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(Schedulers.io())
+                .doOnNext(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+
+                    }
+                })
+                .observeOn(Schedulers.newThread())
+                .doOnComplete(new Action() {
+                    @Override
+                    public void run() throws Exception {
+
+                    }
+                });
+
+    }
+
+
+    private io.reactivex.Observer<Integer> getObserver(){
+        io.reactivex.Observer<Integer> observer = new io.reactivex.Observer<Integer>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.e(TAG, "onSubscribe" + Thread.currentThread().getName());
+            }
+
+            @Override
+            public void onNext(Integer integer) {
+                Log.e(TAG, "onNext: " + value + Thread.currentThread().getName());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e(TAG, "onError: ");
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e(TAG, "onComplete: All Done!" + Thread.currentThread().getName());
+            }
+        };
+        return  observer;
+    }
+
+
 }
